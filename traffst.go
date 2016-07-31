@@ -8,6 +8,7 @@ import (
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
 	"github.com/google/gopacket/pcap"
+	"github.com/olekukonko/tablewriter"
 	"net/http"
 	"os"
 	"sort"
@@ -16,7 +17,7 @@ import (
 
 var (
 	device  = flag.String("i", "eth0", "interface")
-	count   = flag.Int("c", 1000, "count")
+	count   = flag.Int("c", 50000, "count")
 	snaplen = flag.Int("s", 65535, "snaplen")
 	debug   = flag.Bool("d", false, "debug")
 	help    = flag.Bool("h", false, "help")
@@ -53,17 +54,17 @@ func sortedKeys(m map[string]int) []string {
 }
 
 func printStatistic(m map[string]int, name string, count int) {
-	fmt.Printf("STATISTIC %s:\n", name)
-	i := 0
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeader([]string{name, "Count"})
+	table.SetAlignment(tablewriter.ALIGN_LEFT)
 
-	for _, res := range sortedKeys(m) {
-		if i > count {
+	for i, res := range sortedKeys(m) {
+		if i >= count {
 			break
 		}
-		fmt.Printf("%s => %d\n", res, m[res])
-		i++
+		table.Append([]string{res, strconv.Itoa(m[res])})
 	}
-	fmt.Printf("\n")
+	table.Render()
 }
 
 func main() {
@@ -142,9 +143,9 @@ func main() {
 		}
 	}
 
-	printStatistic(statisticIP, "IP", 8)
-	printStatistic(statisticTTL, "TTL", 8)
-	printStatistic(statisticTCP, "TCP", 8)
-	printStatistic(statisticHost, "Host", 10)
+	printStatistic(statisticIP, "IP", 5)
+	printStatistic(statisticTTL, "TTL", 5)
+	printStatistic(statisticTCP, "TCP", 5)
+	printStatistic(statisticHost, "Host", 5)
 
 }
